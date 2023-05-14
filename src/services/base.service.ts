@@ -1,37 +1,30 @@
 import {
   BaseEntity,
-  Repository,
-  FindOneOptions,
   DeepPartial,
-  ObjectId,
-  FindOptionsWhere,
-  UpdateResult,
   DeleteResult,
+  FindOptionsWhere,
+  ObjectId,
+  Repository,
+  UpdateResult
 } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { IBaseService } from './interface/i.base.service';
 
-export class BaseService<T extends BaseEntity> {
-  protected repository: Repository<T>;
+export class BaseService<T extends BaseEntity, R extends Repository<T>>
+  implements IBaseService<T>
+{
+  protected readonly repository: R;
 
-  constructor(repository: Repository<T>) {
+  constructor(repository: R) {
     this.repository = repository;
   }
 
-  async index(): Promise<T[]> {
+  async findAll(): Promise<T[]> {
     return await this.repository.find();
   }
 
-  async findOne(options: FindOneOptions<T>): Promise<T | null> {
-    return await this.repository.findOne(options);
-  }
-
-  async findOneOrFail(options: FindOneOptions<T>): Promise<T> {
-    return await this.repository.findOneOrFail(options);
-  }
-
   async create(data: DeepPartial<T>): Promise<T> {
-    const entity = this.repository.create(data);
-    return await this.repository.save(entity);
+    return await this.repository.save(data);
   }
 
   async update(

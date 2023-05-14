@@ -1,47 +1,26 @@
 import { NextFunction, Request, Response } from 'express';
 
-import UserService from '@/services/user.service';
-import { CreateUserInput, VerifyUserInput } from '@/schemas/user.schema';
-import { PG_CONSTRAINT, HTTP_CODE } from '@/constants/common';
 import { toUser } from '@/mappers/auth.mapper';
+import { IUserService } from '@/services/interface/user.interface';
 import ApiResponse from '@/utils/api-response';
 
 export default class AuthController {
-  protected userService: UserService;
+  private userService: IUserService;
 
-  constructor() {
-    this.userService = new UserService();
+  constructor(userService: IUserService) {
+    this.userService = userService;
     this.register = this.register.bind(this);
-    this.verifyEmail = this.verifyEmail.bind(this);
   }
 
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const input: CreateUserInput = req.body;
-      const user = await this.userService.createUser(input);
+      const input = req.body;
+      console.log({input})
+      const user = await this.userService.create(input);
+
       return ApiResponse.success(res, {
         data: toUser(user),
       });
-    } catch (error: any) {
-      if (error.code === PG_CONSTRAINT.UNIQUE_VIOLATION) {
-        return next({
-          statusCode: HTTP_CODE.BAD_REQUEST,
-          message: 'Email already exists',
-        });
-      }
-
-      next(error);
-    }
-  }
-
-  async verifyEmail(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { token } = req.query as VerifyUserInput;
-      await this.userService.verifyEmail(token);
-      const data = {
-        message: 'Email verified successfully',
-      };
-      return ApiResponse.success(res, { data });
     } catch (error: any) {
       next(error);
     }

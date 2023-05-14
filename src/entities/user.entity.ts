@@ -20,7 +20,7 @@ export class User extends Base {
   @Column({
     type: 'enum',
     enum: ROLE,
-    default: ROLE.MANAGER,
+    default: ROLE.USER,
   })
   role: ROLE;
 
@@ -59,11 +59,6 @@ export class User extends Base {
     nullable: true,
   })
   verifyCode: string;
-
-  @Column({
-    nullable: true,
-  })
-  verifyCodeSendAt: Date;
 
   @BeforeInsert()
   async hashPassword() {

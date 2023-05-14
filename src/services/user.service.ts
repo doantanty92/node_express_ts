@@ -1,41 +1,25 @@
-import AppDataSource from '@/utils/app-data-source';
+import { BaseService } from './base.service';
 import { User } from '@/entities/user.entity';
-import { BaseService } from '@/services/base.service';
-import { CreateUserInput } from '@/schemas/user.schema';
-import { sendVerifyToken } from '@/utils/mail';
+import AppDataSource from '@/utils/app-data-source';
+import { IUserService } from './interface/user.interface';
+import { UserRepository } from '@/repositories/user.repository';
 
-export default class UserService extends BaseService<User> {
+export default class UserService
+  extends BaseService<User, UserRepository>
+  implements IUserService
+{
   constructor() {
-    const repo = AppDataSource.getRepository(User);
-    super(repo);
+    super(AppDataSource.getRepository(User));
   }
 
-  async createUser(input: CreateUserInput) {
-    const user = {
-      ...input,
-      confirmationToken: User.genConfirmationToken(),
-      confirmTokenSendAt: new Date(),
-    };
-
-    const newUser = await this.create(user);
-    await sendVerifyToken(newUser.email, newUser.confirmationToken);
+  public async create(input: User) {
+    const newUser = await this.repository.create(input);
+    await this.repository.save(newUser);
     return newUser;
   }
 
-  async verifyEmail(token: string) {
-    const user = await this.findOne({
-      where: {
-        confirmationToken: token,
-      },
-    });
-
-    if (!user) {
-      throw new Error('Invalid token');
-    }
-
-    user.isActivated = true;
-    user.isConfirmed = true;
-    user.confirmationToken = '';
-    await this.update(user.id, user);
+  public async findAll() {
+    const newUser = await this.repository.find();
+    return newUser;
   }
 }

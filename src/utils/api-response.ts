@@ -1,8 +1,8 @@
 import { Response } from 'express';
 
 import { HTTP_CODE } from '@/constants/common';
-import { Error } from '@/types/error';
-import { Pagination } from '@/types/pagination';
+import { Pagination } from '@/types/Pagination';
+import { Error } from '@/types/Error';
 
 export default class ApiResponse {
   static success(

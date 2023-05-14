@@ -1,20 +1,13 @@
 import express from 'express';
 
-import { validate } from '@/middleware/validate';
-import { createUserSchema, verifyUserSchema } from '@/schemas/user.schema';
 import AuthController from '@/controllers/auth.controller';
+import UserService from '@/services/user.service';
 
 const router = express.Router();
-const authController = new AuthController();
+const userService = new UserService();
+const authController = new AuthController(userService);
 
 // POST /api/v1/auth/register
-router.post('/register', validate(createUserSchema), authController.register);
-
-// GET /api/v1/auth/verify-email/:token
-router.get(
-  '/verify-email',
-  validate(verifyUserSchema),
-  authController.verifyEmail
-);
+router.post('/register', authController.register);
 
 export default router;
